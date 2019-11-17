@@ -1,0 +1,35 @@
+body {
+  background-color: #ebf2ff;
+}
+
+.logo-game-container {
+  margin: 0 auto;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 1200px;
+  padding: 20px;
+  border: 1px solid rgba(34, 36, 38, 0.15);
+  box-shadow: 0px 1px 2px 0 rgba(34, 36, 38, 0.15);
+  border-radius: 0.28571429rem;
+  background: #fff;
+  display: flex;
+  box-sizing: border-box;
+  min-height: 300px;
+}
+
+.logo-game-col {
+  padding: 15px;
+}
+
+.logo-game-col--game-view {
+  flex: 7;
+  border-right: 2px solid grey;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.logo-game-col--score-view {
+  flex: 3;
+}
