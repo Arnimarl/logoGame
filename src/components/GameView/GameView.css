@@ -7,7 +7,7 @@
 
 .logo-game-card {
   padding: 15px;
-  font-size: 60px;
+  font-size: 65px;
   margin: 5px;
   margin-right: 20px;
   border: 1px solid rgba(34, 36, 38, 0.15);
@@ -24,6 +24,22 @@
   box-shadow: none;
 }
 
+.logo-game-card--matched {
+  visibility: hidden;
+}
+
 .logo-game-logo-area {
   margin-top: 50px;
+}
+
+.logo-game-reply {
+  font-size: 16px;
+  cursor: pointer;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+
+.logo-game-reply:hover {
+  text-decoration: underline;
 }

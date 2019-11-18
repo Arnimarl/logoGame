@@ -7,9 +7,6 @@ import { shuffle } from '../../helpers/arrayMethods';
 // find this card
 // polish UI and code
 
-// when time: save scores
-// alertify for scores
-
 class LogoGame extends Component {
   constructor(props) {
     super(props);
@@ -18,6 +15,7 @@ class LogoGame extends Component {
 
     this.state = {  
       score: 0,
+      matchedCards: 0,
       isGameStarted: false,
       isGameWon: false,
       pickupCards: [
@@ -69,11 +67,14 @@ class LogoGame extends Component {
     this.setState({ pickupCards: shuffledPickupCards });
   }
 
-  removePickupCard = (idx) => {
+  matchPickupCard = (idx) => {
     let pickupCards = [...this.state.pickupCards];
-    pickupCards.splice(idx, 1);
+    pickupCards[idx].matched = true;
 
-    this.setState({ pickupCards: pickupCards });
+    this.setState({ 
+      pickupCards: pickupCards, 
+      matchedCards: this.state.matchedCards + 1
+    });
   }
 
   startGame = () => {
@@ -94,10 +95,36 @@ class LogoGame extends Component {
   onGameWinLogic = () => {
     clearInterval(this.scoreInterval);
     this.setState({ isGameWon: true });
+
+    this.scores = JSON.parse(localStorage.getItem('bestGameScores')) || [];
+    this.scoreAlert();
+    this.saveScore();
     
     setInterval(() => {
       window.location.reload();
     }, 10000);
+  }
+
+  saveScore() {
+    const dateNow = new Date();
+    this.scores.push({
+      score: this.state.score,
+      createdAt: dateNow.toLocaleString()
+    });
+    localStorage.setItem('bestGameScores', JSON.stringify(this.scores));
+  }
+
+  scoreAlert() {
+    if (!this.scores.length) {
+      return;
+    }
+    const arr = this.scores.map((score) => {return score.score});
+    const lowestScore = arr.reduce((a, b) => Math.min(a, b));
+    console.log(lowestScore);
+
+    if (this.state.score < lowestScore) {
+      alert('Your new best score!');
+    }
   }
 
   render() { 
@@ -108,10 +135,11 @@ class LogoGame extends Component {
           isGameStarted={this.state.isGameStarted}
           startGame={this.startGame}
           dropSlots={this.state.dropSlots}
-          removePickupCard={(idx) => this.removePickupCard(idx)}
+          matchPickupCard={(idx) => this.matchPickupCard(idx)}
           incorrectPick={this.incorrectPick}
           onGameWinLogic={this.onGameWinLogic}
-          isGameWon={this.state.isGameWon}/>
+          isGameWon={this.state.isGameWon}
+          matchedCards={this.state.matchedCards}/>
 
         <ScoreView 
           score={this.state.score}/>
