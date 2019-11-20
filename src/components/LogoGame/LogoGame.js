@@ -3,8 +3,8 @@ import './LogoGame.css';
 import GameView from '../GameView/GameView';
 import ScoreView from '../ScoreView/ScoreView';
 import { shuffle } from '../../helpers/arrayMethods';
+import alertify from 'alertifyjs';
 
-// find this card
 // polish UI and code
 
 class LogoGame extends Component {
@@ -18,6 +18,8 @@ class LogoGame extends Component {
       matchedCards: 0,
       isGameStarted: false,
       isGameWon: false,
+      theBestScore: JSON.parse(localStorage.getItem('theBestScore')) || undefined,
+      letterToFind: undefined,
       pickupCards: [
         {
           letter: 'z'
@@ -55,11 +57,9 @@ class LogoGame extends Component {
     }
   }
 
-  componentDidUpdate() {
-  }
-
   componentDidMount() {
     this.shufflePickupCards();
+    this.setNewLetterToFind();
   }
 
   shufflePickupCards() {
@@ -67,13 +67,19 @@ class LogoGame extends Component {
     this.setState({ pickupCards: shuffledPickupCards });
   }
 
-  matchPickupCard = (idx) => {
+  matchPickupCard = (idx, slotIdx) => {
     let pickupCards = [...this.state.pickupCards];
     pickupCards[idx].matched = true;
 
+    let dropSlots = [...this.state.dropSlots];
+    dropSlots[slotIdx].taken = true;
+
     this.setState({ 
-      pickupCards: pickupCards, 
+      pickupCards: pickupCards,
+      dropSlots: dropSlots,
       matchedCards: this.state.matchedCards + 1
+    }, () => {
+      this.setNewLetterToFind();
     });
   }
 
@@ -90,6 +96,18 @@ class LogoGame extends Component {
 
   incorrectPick = () => {
     this.setState({ score: this.state.score + this.incorrectPickPenalty });
+    this.setNewLetterToFind();
+  }
+
+  setNewLetterToFind = () => {
+    const possibleLetters = this.state.pickupCards.filter((card) => {
+      return !card.matched;
+    });
+    if (!possibleLetters.length) {
+      return;
+    }
+    const newLetterToFind = shuffle(possibleLetters)[0];
+    this.setState({ letterToFind: newLetterToFind.letter });
   }
 
   onGameWinLogic = () => {
@@ -100,8 +118,10 @@ class LogoGame extends Component {
     this.scoreAlert();
     this.saveScore();
     
-    setInterval(() => {
-      window.location.reload();
+    setTimeout(() => {
+      if (!this.stopReload) {
+        window.location.reload();
+      }
     }, 10000);
   }
 
@@ -114,16 +134,43 @@ class LogoGame extends Component {
     localStorage.setItem('bestGameScores', JSON.stringify(this.scores));
   }
 
-  scoreAlert() {
+  saveTheBestScore(name) {
+    const theBestScore = {
+      ownerName: name,
+      score: this.state.score
+    }
+
+    localStorage.setItem('theBestScore', JSON.stringify(theBestScore));
+    this.setState({ theBestScore: theBestScore });
+  }
+
+  saveNewBestScoreSpecialAlert() {
+    const theBestScoreOwnerName = this.state.theBestScore ? this.state.theBestScore.ownerName : '';
+
+    alertify.prompt('This is the best result so far! What is your name?', theBestScoreOwnerName,
+      (e, name) => {
+        this.saveTheBestScore(name);
+
+        alertify.success('You did great, ' + name);
+      },
+      (e) => {
+        alertify.error('Cancel');
+    });
+  }
+
+  scoreAlert = () => {
     if (!this.scores.length) {
+      alertify.success('Your best score!');
+      this.saveNewBestScoreSpecialAlert();
       return;
     }
     const arr = this.scores.map((score) => {return score.score});
     const lowestScore = arr.reduce((a, b) => Math.min(a, b));
-    console.log(lowestScore);
 
     if (this.state.score < lowestScore) {
-      alert('Your new best score!');
+      this.stopReload = true;
+      alertify.success('Your new best score!');
+      this.saveNewBestScoreSpecialAlert();
     }
   }
 
@@ -135,14 +182,17 @@ class LogoGame extends Component {
           isGameStarted={this.state.isGameStarted}
           startGame={this.startGame}
           dropSlots={this.state.dropSlots}
-          matchPickupCard={(idx) => this.matchPickupCard(idx)}
+          matchPickupCard={(idx, slotIdx) => this.matchPickupCard(idx, slotIdx)}
           incorrectPick={this.incorrectPick}
           onGameWinLogic={this.onGameWinLogic}
           isGameWon={this.state.isGameWon}
-          matchedCards={this.state.matchedCards}/>
+          matchedCards={this.state.matchedCards}
+          letterToFind={this.state.letterToFind}/>
 
         <ScoreView 
-          score={this.state.score}/>
+          score={this.state.score}
+          theBestScore={this.state.theBestScore}
+          letterToFind={this.state.letterToFind}/>
       </section>
      );
   }

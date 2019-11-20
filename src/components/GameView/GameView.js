@@ -17,17 +17,20 @@ const GameView = (props) => {
     e.target.style.opacity = '1';
   }
 
-  const letterMatchesWithSlot = (e) => {
-    e.target.style.color = '#3c0078';
+  const letterMatchesWithSlot = (e, slotIdx, slot) => {
     e.target.style.border = 'none';
+    e.target.style.backgroundImage = `url("assets/zoovu-logo-${slot.accepts}.png")`;
 
-    props.matchPickupCard(e.dataTransfer.getData('idxOfCardFromPickupList'));
+    props.matchPickupCard(e.dataTransfer.getData('idxOfCardFromPickupList'),
+                          slotIdx);
   }
 
-  const onLetterDrop = (e, acceptedLetter) => {
-    let droppedLetter = e.dataTransfer.getData('letter');
-    if (droppedLetter === acceptedLetter) {
-      letterMatchesWithSlot(e);
+  const onLetterDrop = (e, slot, slotIdx) => {
+    const droppedLetter = e.dataTransfer.getData('letter');
+    const droppedProperLetter = ((droppedLetter === slot.accepts) && !slot.taken && (droppedLetter === props.letterToFind));
+
+    if (droppedProperLetter) {
+      letterMatchesWithSlot(e, slotIdx, slot);
       if (props.matchedCards === 4) {
         props.onGameWinLogic();
       }
@@ -56,7 +59,6 @@ const GameView = (props) => {
           You have won!<br/>
           <small className="logo-game-reply" onClick={() => {replayNow()}}>(click to replay now)</small>
         </h1>
-        
       }
 
       {!(props.matchedCards === 5) &&
@@ -69,7 +71,7 @@ const GameView = (props) => {
                   draggable="true"
                   onDragStart={(e) => {onLetterDragStar(e, card.letter, idx)}}
                   onDragEnd={(e) => {onLetterDragEnd(e)}}>
-                {card.letter}
+                ?
               </li>
             ))}
           </ul>
@@ -85,8 +87,7 @@ const GameView = (props) => {
                 onDragEnter={(e) => {onLetterDragEnter(e)}}
                 onDragLeave={(e) => {onLetterDragLeave(e)}}
                 onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => onLetterDrop(e, slot.accepts)}>
-              {slot.accepts}
+                onDrop={(e) => onLetterDrop(e, slot, idx)}>
             </li>
           ))}
         </ul>

@@ -1,0 +1,21 @@
+.logo-game-best-score {
+  margin: 15px 0;
+  border: 1px solid grey;
+  border-left: none;
+  border-right: none;
+  padding: 8px 0;
+}
+
+.logo-game-find-card {
+  text-align: center;
+  margin-top: 70px;
+}
+
+.logo-game-find-card__letter {
+  width: 95px;
+  height: 110px;
+  margin: 0 auto;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}

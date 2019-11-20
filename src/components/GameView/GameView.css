@@ -7,13 +7,20 @@
 
 .logo-game-card {
   padding: 15px;
-  font-size: 65px;
+  font-size: 55px;
   margin: 5px;
   margin-right: 20px;
   border: 1px solid rgba(34, 36, 38, 0.15);
   box-shadow: 0px 1px 2px 0 rgba(34, 36, 38, 0.15);
   cursor: pointer;
   color: #3c0078;
+  width: 95px;
+  height: 110px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  box-sizing: border-box;
+  text-align: center;
 }
 
 .logo-game-card--slot {
