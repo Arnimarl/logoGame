@@ -1,6 +1,6 @@
 To run, in the project dctionary, run the following:
 
-### `npm start`
+### `npm install`
 to install all dependencies
 
 ### `npm start`
