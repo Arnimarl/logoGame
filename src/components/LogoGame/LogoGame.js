@@ -4,8 +4,7 @@ import GameView from '../GameView/GameView';
 import ScoreView from '../ScoreView/ScoreView';
 import { shuffle } from '../../helpers/arrayMethods';
 import alertify from 'alertifyjs';
-
-// polish UI and code
+import state from './LogoGameState';
 
 class LogoGame extends Component {
   constructor(props) {
@@ -13,53 +12,35 @@ class LogoGame extends Component {
 
     this.incorrectPickPenalty = 10;
 
-    this.state = {  
-      score: 0,
-      matchedCards: 0,
-      isGameStarted: false,
-      isGameWon: false,
-      theBestScore: JSON.parse(localStorage.getItem('theBestScore')) || undefined,
-      letterToFind: undefined,
-      pickupCards: [
-        {
-          letter: 'z'
-        },
-        {
-          letter: 'o'
-        },
-        {
-          letter: 'o'
-        },
-        {
-          letter: 'v'
-        },
-        {
-          letter: 'u'
-        }
-      ],
-      dropSlots: [
-        {
-          accepts: 'z'
-        },
-        {
-          accepts: 'o'
-        },
-        {
-          accepts: 'o'
-        },
-        {
-          accepts: 'v'
-        },
-        {
-          accepts: 'u'
-        }
-      ]
-    }
+    this.state = state;
   }
 
   componentDidMount() {
+    const introMsgHasBeenAlreadyShown = localStorage.getItem('introMsgShown');
+
+    if (!introMsgHasBeenAlreadyShown) {
+      this.displayIntroMessage();
+    }
     this.shufflePickupCards();
     this.setNewLetterToFind();
+  }
+
+  displayIntroMessage() {
+    const introMsg = `The main goal of this game is to rebuild a logo. The logo is basically a word <i>"Zoovu"</i> with a little fancier font. 
+                      Do it by drag & drop the right letter in the right place.<br><br>
+                      To make it even funnier your time is counted. Everything in this world is about time, isn't it? Since we have some magic capabilities, 
+                      your incorrect moves come with a penalty, increasing the time.<br><br>
+                      The best score is the lowest one.<br><br>Good luck!`;
+
+    alertify.confirm(introMsg,
+      () => {
+        localStorage.setItem('introMsgShown', true);
+      }
+    )
+    .set({
+      'labels': {ok: 'Got it, never show again!', cancel: 'Got it!'},
+      'transition': 'slide'
+    }).setHeader('A quick intro');
   }
 
   shufflePickupCards() {
@@ -119,7 +100,7 @@ class LogoGame extends Component {
     this.saveScore();
     
     setTimeout(() => {
-      if (!this.stopReload) {
+      if (!this.state.stopReload) {
         window.location.reload();
       }
     }, 10000);
@@ -144,23 +125,25 @@ class LogoGame extends Component {
     this.setState({ theBestScore: theBestScore });
   }
 
-  saveNewBestScoreSpecialAlert() {
+  saveNewBestScoreSpecialAlert = () => {
     const theBestScoreOwnerName = this.state.theBestScore ? this.state.theBestScore.ownerName : '';
 
     alertify.prompt('This is the best result so far! What is your name?', theBestScoreOwnerName,
       (e, name) => {
         this.saveTheBestScore(name);
-
         alertify.success('You did great, ' + name);
       },
       (e) => {
         alertify.error('Cancel');
-    });
+    })
+    .set({'transition': 'slide'})
+    .setHeader('Congratulations!');
   }
 
   scoreAlert = () => {
     if (!this.scores.length) {
       alertify.success('Your best score!');
+      this.setState({ stopReload: true });
       this.saveNewBestScoreSpecialAlert();
       return;
     }
@@ -168,7 +151,7 @@ class LogoGame extends Component {
     const lowestScore = arr.reduce((a, b) => Math.min(a, b));
 
     if (this.state.score < lowestScore) {
-      this.stopReload = true;
+      this.setState({ stopReload: true });
       alertify.success('Your new best score!');
       this.saveNewBestScoreSpecialAlert();
     }
